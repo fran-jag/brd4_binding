@@ -15,6 +15,7 @@ pyspark = "^3.5.2"
 seaborn = "^0.13.2"
 pyarrow = "^17.0.0"
 fastparquet = "^2024.5.0"
+smilespe = "^0.0.3"
 
 
 [tool.poetry.group.dev.dependencies]
