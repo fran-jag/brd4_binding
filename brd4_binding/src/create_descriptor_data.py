@@ -15,7 +15,9 @@ from rdkit.Chem import Descriptors
 from rdkit.rdBase import BlockLogs
 
 
-def read_data(path="../data/brd4_5p.parquet", index='id'):
+def read_data(path="../data/brd4_5p.parquet",
+              index='id',
+              ) -> pd.DataFrame:
     """
     Read data from parquet file into a pandas.DataFrame.
 
@@ -34,7 +36,7 @@ def read_data(path="../data/brd4_5p.parquet", index='id'):
 
 
 # Remove protecting group from buildingblock1
-def clean_bb1(original_data):
+def clean_bb1(original_data: pd.DataFrame) -> pd.DataFrame:
     prot_group = 'CC1c2ccccc2-c2ccccc21'
     for index in original_data.index:
         old_str = original_data.loc[index, 'buildingblock1_smiles']
@@ -44,21 +46,23 @@ def clean_bb1(original_data):
 
 
 # Get descriptors from Chem.Descriptors
-def get_descriptors():
+def get_descriptors() -> int:
     descriptors_list = [x[0] for x
                         in Descriptors._descList
                         ]
     return len(descriptors_list)
 
 
-def get_smiles_list(data, buildingblock):
+def get_smiles_list(data, buildingblock) -> list:
 
     col = "buildingblock{}_smiles".format(buildingblock)
     return data[col].unique().tolist()
 
 
 # Create dataframes with descriptors from buildingblocks
-def make_descriptor_df(original_data, buildingblock):
+def make_descriptor_df(original_data,
+                       buildingblock,
+                       ) -> pd.DataFrame:
 
     print("Parsing unique buildingblock smiles...")
     smiles_list = get_smiles_list(original_data, buildingblock)
@@ -73,11 +77,23 @@ def make_descriptor_df(original_data, buildingblock):
     print("Creating DataFrame...")
     descriptors_df = pd.DataFrame(descriptors)
     index = "bb{}_smiles".format(buildingblock)
-    descriptors_df[index] = list(smiles_list)
+    descriptors_df[index] = smiles_list
     descriptors_df = descriptors_df.set_index(index)
     print("Done.")
 
     return descriptors_df
+
+
+# def get_3_tuple(id, column):
+#     df_loc_bb1 = brd4_df.loc[id, 'buildingblock1_smiles']
+#     bb1_value = descriptors_bb1_df.loc[df_loc_bb1, column]
+
+#     df_loc_bb2 = brd4_df.loc[id, 'buildingblock2_smiles']
+#     bb2_value = descriptors_bb2_df.loc[df_loc_bb2, column]
+
+#     df_loc_bb3 = brd4_df.loc[id, 'buildingblock3_smiles']
+#     bb3_value = descriptors_bb3_df.loc[df_loc_bb3, column]
+#     return (bb1_value, bb2_value, bb3_value)
 
 
 if __name__ == "__main__":
@@ -86,5 +102,8 @@ if __name__ == "__main__":
     brd4_df = read_data()
     brd4_df = clean_bb1(brd4_df)
     descriptors_list = get_descriptors()
-    descriptors_bb1_df = make_descriptor_df(brd4_df, 1)
-    print(descriptors_bb1_df.head())
+
+    descriptor_df = make_descriptor_df(brd4_df, 1)
+    for bb in [2, 3]:
+        temp_df = make_descriptor_df(brd4_df, bb)
+        descriptor_df = pd.concat([descriptor_df, temp_df])
