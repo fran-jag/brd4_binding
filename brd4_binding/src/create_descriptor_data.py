@@ -130,7 +130,8 @@ if __name__ == "__main__":
     descriptor_df.drop_duplicates(inplace=True)
 
     ids_test = brd4_df.index[:100]
-    output_df = pd.DataFrame(columns=descriptors_list)
+    output_df = pd.DataFrame(columns=descriptors_list,
+                             index='id')
     for id in ids_test:
         temp_row = get_vector_from_id(original_df=brd4_df,
                                       id=id,
