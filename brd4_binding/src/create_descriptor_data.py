@@ -15,7 +15,7 @@ from rdkit.Chem import Descriptors
 from rdkit.rdBase import BlockLogs
 
 
-def read_data(path="../data/brd4_5p.parquet",
+def read_data(path="../../data/brd4_5p.parquet",
               index='id',
               ) -> pd.DataFrame:
     """
@@ -32,6 +32,7 @@ def read_data(path="../data/brd4_5p.parquet",
         pandas.DataFrame
 
     """
+    print("Reading parquet file...")
     return pd.read_parquet(path).set_index(index)
 
 
@@ -84,21 +85,32 @@ def make_descriptor_df(original_data,
     return descriptors_df
 
 
-# def get_3_tuple(id, column):
-#     df_loc_bb1 = brd4_df.loc[id, 'buildingblock1_smiles']
-#     bb1_value = descriptors_bb1_df.loc[df_loc_bb1, column]
+def _get_3_tuple(original_df,
+                 id,
+                 descriptor_df,
+                 column,
+                 ) -> tuple:
+    df_loc_bb1 = original_df.loc[id, 'buildingblock1_smiles']
+    bb1_value = descriptor_df.loc[df_loc_bb1, column]
 
-#     df_loc_bb2 = brd4_df.loc[id, 'buildingblock2_smiles']
-#     bb2_value = descriptors_bb2_df.loc[df_loc_bb2, column]
+    df_loc_bb2 = original_df.loc[id, 'buildingblock2_smiles']
+    bb2_value = descriptor_df.loc[df_loc_bb2, column]
 
-#     df_loc_bb3 = brd4_df.loc[id, 'buildingblock3_smiles']
-#     bb3_value = descriptors_bb3_df.loc[df_loc_bb3, column]
-#     return (bb1_value, bb2_value, bb3_value)
+    df_loc_bb3 = original_df.loc[id, 'buildingblock3_smiles']
+    bb3_value = descriptor_df.loc[df_loc_bb3, column]
+
+    return (bb1_value, bb2_value, bb3_value)
+
+
+def get_vector_from_id(id,
+                       descriptors_list):
+    return {column: _get_3_tuple(id, column) for column in descriptors_list}
 
 
 if __name__ == "__main__":
     # Silence RDKit deprecation warning
     block = BlockLogs()
+
     brd4_df = read_data()
     brd4_df = clean_bb1(brd4_df)
     descriptors_list = get_descriptors()
@@ -106,4 +118,5 @@ if __name__ == "__main__":
     descriptor_df = make_descriptor_df(brd4_df, 1)
     for bb in [2, 3]:
         temp_df = make_descriptor_df(brd4_df, bb)
-        descriptor_df = pd.concat([descriptor_df, temp_df])
+        descriptor_df = pd.concat([descriptor_df, temp_df],
+                                  axis=0)
