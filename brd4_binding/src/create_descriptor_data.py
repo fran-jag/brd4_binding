@@ -12,39 +12,79 @@ import pandas as pd
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors
+from rdkit.rdBase import BlockLogs
 
 
-original_df = pd.read_parquet("../data/brd4_5p.parquet").set_index('id')
+def read_data(path="../data/brd4_5p.parquet", index='id'):
+    """
+    Read data from parquet file into a pandas.DataFrame.
+
+    Read data from parquet file located in path into a
+    pandas.DataFrame, sets the index to 'id' column
+
+    Args:
+        path (str): path to the parquet file
+        index (str): column of the dataframe to use as index.
+
+    Returns:
+        pandas.DataFrame
+
+    """
+    return pd.read_parquet(path).set_index(index)
+
 
 # Remove protecting group from buildingblock1
-prot_group = 'CC1c2ccccc2-c2ccccc21'
-for index in original_df.index:
-    old_str = original_df.loc[index, 'buildingblock1_smiles']
-    new_val = old_str.replace(prot_group, '')
-    original_df.at[index, 'buildingblock1_smiles'] = new_val
+def clean_bb1(original_data):
+    prot_group = 'CC1c2ccccc2-c2ccccc21'
+    for index in original_data.index:
+        old_str = original_data.loc[index, 'buildingblock1_smiles']
+        new_val = old_str.replace(prot_group, '')
+        original_data.at[index, 'buildingblock1_smiles'] = new_val
+    return original_data
+
 
 # Get descriptors from Chem.Descriptors
-descriptors_list = [x[0] for x
-                    in Descriptors._descList
-                    ]
-total_descriptors = len(descriptors_list)
+def get_descriptors():
+    descriptors_list = [x[0] for x
+                        in Descriptors._descList
+                        ]
+    return len(descriptors_list)
+
+
+def get_smiles_list(data, buildingblock):
+
+    col = "buildingblock{}_smiles".format(buildingblock)
+    return data[col].unique().tolist()
 
 
 # Create dataframes with descriptors from buildingblocks
-def make_descriptor_df(buildingblock):
-    bb_smiles = {y: x for x, y in
-                 enumerate(original_df["buildingblock{}_smiles"
-                                       .format(buildingblock)].unique())}
+def make_descriptor_df(original_data, buildingblock):
+
+    print("Parsing unique buildingblock smiles...")
+    smiles_list = get_smiles_list(original_data, buildingblock)
+
+    print("Calculating descriptors"
+          " for buildingblock{} ({})..."
+          .format(buildingblock, len(smiles_list))
+          )
     descriptors = [Descriptors.CalcMolDescriptors(Chem.MolFromSmiles(smile))
-                   for smile in list(bb_smiles.keys())]
+                   for smile in smiles_list]
+
+    print("Creating DataFrame...")
     descriptors_df = pd.DataFrame(descriptors)
     index = "bb{}_smiles".format(buildingblock)
-    descriptors_df[index] = list(bb_smiles.keys())
+    descriptors_df[index] = list(smiles_list)
     descriptors_df = descriptors_df.set_index(index)
+    print("Done.")
 
     return descriptors_df
 
 
-descriptors_bb1_df = make_descriptor_df(1)
-descriptors_bb2_df = make_descriptor_df(2)
-descriptors_bb3_df = make_descriptor_df(3)
+if __name__ == "__main__":
+    # Silence RDKit deprecation warning
+    block = BlockLogs()
+    brd4_df = read_data()
+    brd4_df = clean_bb1(brd4_df)
+    descriptors_list = get_descriptors()
+    descriptors_bb1_df = make_descriptor_df(brd4_df, 1)
+    print(descriptors_bb1_df.head())
