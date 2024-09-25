@@ -47,11 +47,11 @@ def clean_bb1(original_data: pd.DataFrame) -> pd.DataFrame:
 
 
 # Get descriptors from Chem.Descriptors
-def get_descriptors() -> int:
+def get_descriptors() -> list:
     descriptors_list = [x[0] for x
                         in Descriptors._descList
                         ]
-    return len(descriptors_list)
+    return descriptors_list
 
 
 def get_smiles_list(data, buildingblock) -> list:
@@ -102,9 +102,16 @@ def _get_3_tuple(original_df,
     return (bb1_value, bb2_value, bb3_value)
 
 
-def get_vector_from_id(id,
+def get_vector_from_id(original_df,
+                       id,
+                       descriptor_df,
                        descriptors_list):
-    return {column: _get_3_tuple(id, column) for column in descriptors_list}
+    return {column: _get_3_tuple(original_df,
+                                 id,
+                                 descriptor_df,
+                                 column)
+            for column
+            in descriptors_list}
 
 
 if __name__ == "__main__":
@@ -120,3 +127,15 @@ if __name__ == "__main__":
         temp_df = make_descriptor_df(brd4_df, bb)
         descriptor_df = pd.concat([descriptor_df, temp_df],
                                   axis=0)
+    descriptor_df.drop_duplicates(inplace=True)
+
+    ids_test = brd4_df.index[:100]
+    output_df = pd.DataFrame(columns=descriptors_list)
+    for id in ids_test:
+        temp_row = get_vector_from_id(original_df=brd4_df,
+                                      id=id,
+                                      descriptor_df=descriptor_df,
+                                      descriptors_list=descriptors_list,
+                                      )
+        output_df.loc[id] = temp_row
+    print(output_df.head())
