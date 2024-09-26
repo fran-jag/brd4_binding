@@ -84,5 +84,6 @@ def main():
 
 if __name__ == "__main__":
     output_df = main()
-    output_df.to_parquet("/home/papafrita/Projects/" +
-                         "brd4_binding/data/output_100k.parquet")
+    output_df.to_csv("/home/papafrita/Projects/" +
+                     "brd4_binding/data/output_100k.csv",
+                     compression='gz')

@@ -13,6 +13,7 @@ def _get_3_tuple(original_df,
                  descriptor_df,
                  column,
                  ) -> tuple:
+
     df_loc_bb1 = original_df.loc[id, 'buildingblock1_smiles']
     bb1_value = descriptor_df.loc[df_loc_bb1, column]
 
