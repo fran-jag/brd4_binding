@@ -36,3 +36,7 @@ def get_vector_from_id(original_df,
                                  column)
             for column
             in descriptors_list}
+
+
+if __name__ == "__main__":
+    get_vector_from_id(281065764)

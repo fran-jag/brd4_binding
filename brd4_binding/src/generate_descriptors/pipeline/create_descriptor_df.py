@@ -11,10 +11,16 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 
 
-def _get_smiles_list(data, buildingblock) -> list:
+def _get_smiles_list(data) -> list:
 
-    col = "buildingblock{}_smiles".format(buildingblock)
-    return data[col].unique().tolist()
+    unique_buildingblocks = []
+
+    for i in [1, 2, 3]:
+        col = "buildingblock{}_smiles".format(i)
+        bb_list = list(set(data.loc[:, col].to_list()))
+        unique_buildingblocks += bb_list
+
+    return unique_buildingblocks
 
 
 def get_descriptors() -> list:
@@ -26,24 +32,13 @@ def get_descriptors() -> list:
 
 # Create dataframes with descriptors from buildingblocks
 def make_descriptor_df(original_data,
-                       buildingblock,
                        ) -> pd.DataFrame:
+    unique_bbs = _get_smiles_list(original_data)
+    temp_dict = {}
 
-    print("Parsing unique buildingblock smiles...")
-    smiles_list = _get_smiles_list(original_data, buildingblock)
+    for bb in unique_bbs:
+        temp_dict[bb] = Descriptors.CalcMolDescriptors(Chem.MolFromSmiles(bb))
 
-    print("Calculating descriptors"
-          " for buildingblock{} ({})..."
-          .format(buildingblock, len(smiles_list))
-          )
-    descriptors = [Descriptors.CalcMolDescriptors(Chem.MolFromSmiles(smile))
-                   for smile in smiles_list]
+    descriptor_df = pd.DataFrame.from_dict(temp_dict, orient="index")
 
-    print("Creating DataFrame...")
-    descriptors_df = pd.DataFrame(descriptors)
-    index = "bb{}_smiles".format(buildingblock)
-    descriptors_df[index] = smiles_list
-    descriptors_df = descriptors_df.set_index(index)
-    print("Done.")
-
-    return descriptors_df
+    return descriptor_df
