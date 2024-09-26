@@ -1,5 +1,6 @@
 import pandas as pd
 import pickle
+import time
 
 from rdkit.rdBase import BlockLogs
 
@@ -20,8 +21,12 @@ def main():
 
     descriptor_df = make_descriptor_df(brd4_df)
 
-    rows = 110000
-    ids_test = brd4_df.index[99000:rows]
+    ids_test = brd4_df.index[:100000]
+
+    start_time = time.time()
+    print("Starting data processing...")
+    print(time.strftime("Start time: %H:%M:%S",
+                        time.localtime(start_time)))
 
     id_counter = 0
     temp_dict = {}
@@ -37,18 +42,40 @@ def main():
         except KeyError:
             failed_ids.append(id)
 
-        if (id_counter % 2500) == 0:
-            print("{} of {} processed.".format(id_counter, rows))
+        if (id_counter % 5000) == 0:
+
+            current_time = time.time()
+            delta_time = current_time - start_time
+
+            print("{} of {} processed.".format(id_counter, len(ids_test)))
+            print("{:.1f}%".format(id_counter/len(ids_test)*100))
+
+            if id_counter > 0:
+                factor = len(ids_test)/id_counter
+                print(time.strftime("ETA: %M minutes",
+                                    time.localtime(delta_time*factor)))
+            print("-"*10)
+
         id_counter += 1
 
     output_df = pd.DataFrame.from_dict(temp_dict, orient="index")
 
-    print("{} IDs failed".format(len(failed_ids)))
-    print("\nSaving list in /data/failed_ids.pickle")
+    end_time = time.time()
+    print("End of data processing. Saving...")
+    print(time.strftime("End time: %H:%M:%S",
+                        time.localtime(end_time)))
 
-    with open("/home/papafrita/Projects/brd4_binding/data/failed_ids.pickle",
-              "wb") as file:
-        pickle.dump(failed_ids, file)
+    if len(failed_ids) > 0:
+        print("{} IDs failed".format(len(failed_ids)))
+        print("\nSaving list in /data/failed_ids.pickle")
+
+        with open("/home/papafrita/Projects/" +
+                  "brd4_binding/data/failed_ids.pickle",
+                  "wb") as file:
+            pickle.dump(failed_ids, file)
+        print("DataFrame saved.")
+    else:
+        print("No IDs failed. Saving DataFrame.")
 
     return output_df.join(brd4_df['binds'])
 
@@ -56,4 +83,4 @@ def main():
 if __name__ == "__main__":
     output_df = main()
     output_df.to_parquet("/home/papafrita/Projects/" +
-                         "brd4_binding/data/output_99to110k.parquet")
+                         "brd4_binding/data/output_100k.parquet")

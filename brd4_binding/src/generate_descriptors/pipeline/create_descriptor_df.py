@@ -33,9 +33,10 @@ def get_descriptors() -> list:
 # Create dataframes with descriptors from buildingblocks
 def make_descriptor_df(original_data,
                        ) -> pd.DataFrame:
-    unique_bbs = _get_smiles_list(original_data)
-    temp_dict = {}
 
+    unique_bbs = _get_smiles_list(original_data)
+
+    temp_dict = {}
     for bb in unique_bbs:
         temp_dict[bb] = Descriptors.CalcMolDescriptors(Chem.MolFromSmiles(bb))
 
