@@ -1,4 +1,3 @@
-import pandas as pd
 import pickle
 import time
 
@@ -18,7 +17,7 @@ def main():
                         "brd4_binding/data/brd4_5p.parquet")
     brd4_df = clean_bb1(brd4_df)
 
-    rows = 100000
+    rows = 200000
 
     brd4_df = brd4_df.iloc[:rows, :]
 
@@ -59,9 +58,6 @@ def main():
             print("-"*10)
 
         id_counter += 1
-
-    output_df = pd.DataFrame.from_dict(temp_dict, orient="index")
-
     end_time = time.time()
     print("End of data processing. Saving...")
     print(time.strftime("End time: %H:%M:%S",
@@ -79,11 +75,11 @@ def main():
     else:
         print("No IDs failed. Saving DataFrame.")
 
-    return output_df.join(brd4_df['binds'])
+    return temp_dict
 
 
 if __name__ == "__main__":
-    output_df = main()
-    output_df.to_csv("/home/papafrita/Projects/" +
-                     "brd4_binding/data/output_100k.csv",
-                     compression='gz')
+    output_dict = main()
+    with open("/home/papafrita/Projects/brd4_binding/data/" +
+              "out_dict_200k.pickle", "wb") as file:
+        pickle.dump(output_dict, file)
