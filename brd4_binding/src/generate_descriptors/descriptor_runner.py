@@ -87,3 +87,6 @@ if __name__ == "__main__":
     with open("/home/papafrita/Projects/brd4_binding/data/" +
               "out_dict_200k.pickle", "wb") as file:
         pickle.dump(output_dict, file)
+
+# TODO
+# Implement steaming pickle dump

@@ -16,6 +16,8 @@ seaborn = "^0.13.2"
 pyarrow = "^17.0.0"
 fastparquet = "^2024.5.0"
 smilespe = "^0.0.3"
+loguru = "^0.7.2"
+scikit-learn = "^1.5.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,3 +26,9 @@ ipykernel = "^6.29.5"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = [".venv", ".env", "src/logs", "src/model/models", "notebooks/"]
+
+[tool.ruff.lint.per-file-ignores]
+"descriptor_runner.py" = ["F841"]
