@@ -1,3 +1,4 @@
+import gc
 import pickle
 import time
 
@@ -74,6 +75,9 @@ def main():
         print("DataFrame saved.")
     else:
         print("No IDs failed. Saving DataFrame.")
+
+    del brd4_df
+    gc.collect()
 
     return temp_dict
 
