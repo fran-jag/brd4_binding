@@ -14,7 +14,7 @@ def main():
     # Silence RDKit deprecation warning
     _block = BlockLogs()  # noqa: F841
 
-    brd4_df = read_data("/home/papafrita/Projects/" +
+    brd4_df = read_data("/home/papafrita/projects/" +
                         "brd4_binding/data/brd4_5p.parquet")
     brd4_df = clean_bb1(brd4_df)
 
@@ -68,7 +68,7 @@ def main():
         print("{} IDs failed".format(len(failed_ids)))
         print("\nSaving list in /data/failed_ids.pickle")
 
-        with open("/home/papafrita/Projects/" +
+        with open("/home/papafrita/projects/" +
                   "brd4_binding/data/failed_ids.pickle",
                   "wb") as file:
             pickle.dump(failed_ids, file)
@@ -84,9 +84,8 @@ def main():
 
 if __name__ == "__main__":
     output_dict = main()
-    with open("/home/papafrita/Projects/brd4_binding/data/" +
+    with open("/home/papafrita/projects/brd4_binding/data/" +
               "out_dict_200k.pickle", "wb") as file:
         pickle.dump(output_dict, file)
 
-# TODO
-# Implement steaming pickle dump
+# TODO - Implement steaming pickle dump
